@@ -1,3 +1,4 @@
+use std::hash;
 mod dynamic_hash;
 mod register;
 
@@ -11,7 +12,10 @@ fn main() {
     for i in 0..100 {
         let registro = arquivo.sequential_read(i);
         if let Some(registro) = registro {
-            if hash_table.insert(registro.get_nseq(), registro.get_nome()).is_err() {
+            if hash_table
+                .insert(registro.get_nseq(), registro.get_nome())
+                .is_err()
+            {
                 println!("Erro ao inserir registro {}", i);
             }
         } else {
@@ -19,6 +23,7 @@ fn main() {
         }
     }
     println!("Hash table nseq 50: {:?}", hash_table.get(&50));
+    //hash_table.save_to_file("hash_table.bin"); Nao funciona ainda
     if hash_table.remove(&50).is_err() {
         println!("Erro ao remover registro 50");
     }

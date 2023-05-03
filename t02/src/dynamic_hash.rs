@@ -1,41 +1,50 @@
 use rand::Error;
 use std::collections::LinkedList;
 use std::fmt::Debug;
+use std::fs::{read, OpenOptions};
 use std::hash::{Hash, Hasher};
+use std::io::{BufReader, Write, Read};
+extern crate savefile;
+use bincode::{deserialize, deserialize_from, serialize_into};
+use serde::{Deserialize, Serialize, Serializer};
+use serde_cbor::de::from_reader;
+
 const INITIAL_CAPACITY: usize = 100;
 const LOAD_FACTOR: f64 = 0.75;
 
 #[allow(dead_code)]
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
 struct Item<K, V> {
     key: K,
     value: V,
 }
+
 #[allow(dead_code)]
 impl<K, V> Item<K, V>
 where
     K: Clone,
     V: Clone,
 {
-    pub fn get_key(&self) -> K {
-        self.key.clone()
+    pub fn get_key(&self) -> &K {
+        &self.key
     }
 
-    pub fn get_value(&self) -> V {
-        self.value.clone()
+    pub fn get_value(&self) -> &V {
+        &self.value
     }
 }
 
 #[allow(dead_code)]
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct DynamicHashTable<K, V> {
     table: Vec<LinkedList<Item<K, V>>>,
     size: usize,
     capacity: usize,
+    resize_factor: f64,
 }
 
 #[allow(dead_code)]
-impl<K, V> DynamicHashTable<K, V>
+impl<'a, K, V> DynamicHashTable <K, V>
 where
     K: Hash + Eq + Debug + Clone,
     V: Debug + Clone,
@@ -45,22 +54,55 @@ where
             table: vec![LinkedList::new(); INITIAL_CAPACITY],
             size: 0,
             capacity: INITIAL_CAPACITY,
+            resize_factor: LOAD_FACTOR,
         }
     }
 
-    pub fn save_to_file(&self, _file_name: &str) -> Result<(), &'static str> {
-        todo!()
-    }
-   
-    pub fn read_from_file(&mut self, _file_name: &str) -> Result<(), &'static str> {
-        todo!()
+    pub fn save_to_file(&self, file_name: &str) -> Result<(), &'static str>
+    where
+        K: Serialize,
+        V: Serialize,
+    {
+        let file = match OpenOptions::new().write(true).create(true).open(file_name) {
+            Ok(file) => file,
+            Err(_) => return Err("Error opening file"),
+        };
+
+        if serialize_into(&file, &self).is_err() {
+            return Err("Error serializing");
+        }
+        Ok(())
     }
 
+    /*pub fn read_from_file (
+        &mut self,
+        file_name: &str,
+    ) -> Result<DynamicHashTable<K, V>, &'static str>
+    where
+        K: Deserialize<'static>,
+        V: Deserialize<'static>,
+    {
+        let file = match OpenOptions::new().read(true).create(true).open(file_name) {
+            Ok(file) => file,
+            Err(_) => return Err("Error opening file"),
+        };
+
+        let mut buf_reader = BufReader::new(file);
+        let mut buffer = Vec::new();
+        if let Err(_) = buf_reader.read_to_end(&mut buffer) {
+            return Err("Error reading from file");
+        }
+
+        let table = match deserialize(&buffer) {
+            Ok(table) => table,
+            Err(_) => return Err("Error deserializing"),
+        };
+        Ok(table)
+    }*/
+
     pub fn insert(&mut self, key: K, value: V) -> std::result::Result<(), &'static str> {
-        if self.size as f64 / self.capacity as f64 > LOAD_FACTOR {
-            if self.resize().is_err() {
-                return Err("Error resizing table");
-            }
+        if self.size as f64 / self.capacity as f64 > self.resize_factor && self.resize().is_err() {
+            return Err("Error resizing table");
         }
 
         let index = self.hash(&key) as usize;
@@ -84,7 +126,7 @@ where
         let index = self.hash(key) as usize;
         if let Some(list) = self.table.get(index) {
             for item in list.iter() {
-                if item.get_key() == *key {
+                if item.get_key().clone() == *key {
                     return Ok(&item.value);
                 }
             }
@@ -97,7 +139,7 @@ where
         if let Some(list) = self.table.get_mut(index) {
             let mut auxiliary_list = LinkedList::new();
             while let Some(item) = list.pop_front() {
-                if item.get_key() == *key {
+                if item.get_key().clone() == *key {
                     self.size -= 1;
                     list.append(&mut auxiliary_list);
                     return Ok(());
@@ -124,8 +166,8 @@ where
             let hash = self.hash(&item.key) as usize;
             let table_idx = hash % self.capacity;
             new_table[table_idx].push_back(Item {
-                key: item.get_key(),
-                value: item.get_value(),
+                key: item.get_key().clone(),
+                value: item.get_value().clone(),
             });
         }
         self.table = new_table;
