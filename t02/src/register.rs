@@ -20,10 +20,7 @@ impl Registro {
             .collect::<Vec<char>>()
             .try_into()
             .unwrap();
-        Registro {
-            nseq,
-            nome: arr,
-        }
+        Registro { nseq, nome: arr }
     }
 
     fn update(&mut self, nseq: u32) {
@@ -36,6 +33,14 @@ impl Registro {
             .collect::<Vec<char>>()
             .try_into()
             .unwrap();
+    }
+
+    pub fn get_nseq(&self) -> u32 {
+        self.nseq
+    }
+
+    pub fn get_nome(&self) -> [char; 96] {
+        self.nome
     }
 }
 
@@ -183,7 +188,7 @@ impl Arquivo {
                 Err(_) => return false, // read error
             }
         }
-        match file.flush(){
+        match file.flush() {
             Ok(_) => found,
             Err(_) => false,
         }
