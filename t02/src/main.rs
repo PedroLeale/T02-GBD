@@ -46,9 +46,7 @@ fn main() {
     println!("Tempo para buscar todos os registros na tabela hash: {:?}", instant.elapsed());
 
     let instant = Instant::now();
-    for i in 0..NUMBER_OF_REGISTERS{
-        let _a = arquivo.sequential_read(i);
-    }
+    let _a = arquivo.sequential_read_blocks(0, NUMBER_OF_REGISTERS as usize);
     println!("Tempo para buscar todos os registros sequencialmente no arquivo: {:?}", instant.elapsed());
 
     if hash_table.remove(&40).is_err() {

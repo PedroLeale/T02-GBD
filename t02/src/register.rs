@@ -131,6 +131,47 @@ impl Arquivo {
         }
     }
 
+    pub fn sequential_read_blocks(
+        &self,
+        mut nseq: u32,
+        amount: usize,
+    ) -> Option<Vec<Option<Registro>>> {
+        let mut file = self.get_file();
+        let mut buffer = [0u8; 100];
+        let mut registros: Vec<Option<Registro>> = Vec::new();
+        for _i in 0..amount {
+            if nseq > self.file_size {
+                registros.push(None);
+            }
+            loop {
+                match file.read(&mut buffer) {
+                    Ok(0) => registros.push(None),
+                    Ok(_) => {
+                        let (nseq_buf, nome_buf) = buffer.split_at(std::mem::size_of::<u32>());
+                        let registro_nseq = u32::from_be_bytes(nseq_buf.try_into().unwrap());
+                        if registro_nseq == nseq {
+                            let nome = String::from_utf8_lossy(nome_buf).to_string();
+                            let registro = Registro {
+                                nseq,
+                                nome: nome
+                                    .chars()
+                                    .take(96)
+                                    .collect::<Vec<char>>()
+                                    .try_into()
+                                    .unwrap(),
+                            };
+                            registros.push(Some(registro));
+                            break;
+                        }
+                    }
+                    Err(_) => registros.push(None),
+                }
+            }
+            nseq += 1;
+        }
+        Some(registros)
+    }
+
     pub fn insert_at_end(&mut self) {
         let mut file = OpenOptions::new()
             .append(true)
