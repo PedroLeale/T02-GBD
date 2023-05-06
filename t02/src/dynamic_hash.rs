@@ -106,6 +106,10 @@ impl DynamicHashTable {
         Err("Key not found")
     }
 
+    pub fn get_size(&self) -> usize {
+        self.size
+    }
+
     fn hash(&self, key: &u32) -> u64 {
         let mut hasher = std::collections::hash_map::DefaultHasher::new();
         key.hash(&mut hasher);

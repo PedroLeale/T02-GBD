@@ -1,13 +1,14 @@
 mod dynamic_hash;
 mod register;
-
+use std::time::Instant;
 //Altere estas constantes se quiser rodar com outros valores
-const BUFFER_SIZE: u32 = 100; // Contado em registros ( cada um de 100 bytes )
-const NUMBER_OF_REGISTERS: u32 = 100;
-const INITIAL_CAPACITY: usize = 100;
+const BUFFER_SIZE: u32 = 1000; // Contado em registros ( cada um de 100 bytes )
+const NUMBER_OF_REGISTERS: u32 = 1000;
+const INITIAL_CAPACITY: usize = 1000;
 const LOAD_FACTOR: f64 = 0.75;
 const FILE_NAME: &str = "arquivo_sem_index_por_hash_dinamico";
 const HASH_TABLE_FILE_NAME: &str = "tabela_hash_dinamica";
+
 /*
 Dependencias no arquivo Cargo.toml
 rand = "0.8.5"
@@ -38,6 +39,18 @@ fn main() {
     }
     println!("Hash table nseq 40: {:?}", hash_table.get(&40));
 
+    let instant = Instant::now();
+    for i in 0..hash_table.get_size() as u32{
+        let _a = hash_table.get(&i);
+    }
+    println!("Tempo de busca sequencial: {:?}", instant.elapsed());
+
+    let instant = Instant::now();
+    for i in 0..NUMBER_OF_REGISTERS{
+        let _a = arquivo.sequential_read(i);
+    }
+    println!("Tempo de busca sequencial no arquivo: {:?}", instant.elapsed());
+
     if hash_table.remove(&40).is_err() {
         println!("Erro ao remover registro 40");
     }
@@ -55,5 +68,6 @@ fn main() {
         println!("Hash table nseq 40 depois de ler do arquivo salvo: {:?}", hash_table_from_file.get(&40));
         println!("Hash table nseq 50 depois de ler do arquivo salvo: {:?}", hash_table_from_file.get(&50));
     }
+
 
 }
