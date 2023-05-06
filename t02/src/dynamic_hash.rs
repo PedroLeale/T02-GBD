@@ -6,9 +6,6 @@ use std::io::{BufReader, Read};
 use bincode::{deserialize, serialize_into};
 use serde::{Deserialize, Serialize};
 
-const INITIAL_CAPACITY: usize = 100;
-const LOAD_FACTOR: f64 = 0.75;
-
 #[derive(Clone, Copy, Debug, Serialize, Deserialize)]
 struct Item {
     key: u32,
@@ -36,12 +33,12 @@ pub struct DynamicHashTable {
 
 #[allow(dead_code)]
 impl DynamicHashTable {
-    pub fn new() -> DynamicHashTable {
+    pub fn new(initial_capacity: usize, resize_factor: f64) -> DynamicHashTable {
         DynamicHashTable {
-            table: vec![LinkedList::new(); INITIAL_CAPACITY],
+            table: vec![LinkedList::new(); initial_capacity],
             size: 0,
-            capacity: INITIAL_CAPACITY,
-            resize_factor: LOAD_FACTOR,
+            capacity: initial_capacity,
+            resize_factor: resize_factor,
         }
     }
 

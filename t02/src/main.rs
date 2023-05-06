@@ -4,6 +4,8 @@ mod register;
 //Altere estas constantes se quiser rodar com outros valores
 const BUFFER_SIZE: u32 = 100; // Contado em registros ( cada um de 100 bytes )
 const NUMBER_OF_REGISTERS: u32 = 100;
+const INITIAL_CAPACITY: usize = 100;
+const LOAD_FACTOR: f64 = 0.75;
 const FILE_NAME: &str = "arquivo_sem_index_por_hash_dinamico";
 const HASH_TABLE_FILE_NAME: &str = "tabela_hash_dinamica";
 /*
@@ -19,7 +21,7 @@ fn main() {
     arquivo.write_in_file();
     println!("Register number 50: {:?}", arquivo.sequential_read(50));
     println!("Register number 40: {:?}", arquivo.sequential_read(40));
-    let mut hash_table: dynamic_hash::DynamicHashTable = dynamic_hash::DynamicHashTable::new();
+    let mut hash_table: dynamic_hash::DynamicHashTable = dynamic_hash::DynamicHashTable::new(INITIAL_CAPACITY, LOAD_FACTOR);
 
     for i in 0..NUMBER_OF_REGISTERS {
         let registro = arquivo.sequential_read(i);
@@ -41,7 +43,7 @@ fn main() {
     }
 
     println!("Hash table nseq 40, para mostrar que removeu: {:?}", hash_table.get(&40));
-
+    
     if hash_table.save_to_file(HASH_TABLE_FILE_NAME).is_err() {
         println!("Erro ao salvar hash table");
     }
