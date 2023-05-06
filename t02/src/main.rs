@@ -43,13 +43,13 @@ fn main() {
     for i in 0..hash_table.get_size() as u32{
         let _a = hash_table.get(&i);
     }
-    println!("Tempo de busca sequencial: {:?}", instant.elapsed());
+    println!("Tempo para buscar todos os registros na tabela hash: {:?}", instant.elapsed());
 
     let instant = Instant::now();
     for i in 0..NUMBER_OF_REGISTERS{
         let _a = arquivo.sequential_read(i);
     }
-    println!("Tempo de busca sequencial no arquivo: {:?}", instant.elapsed());
+    println!("Tempo para buscar todos os registros sequencialmente no arquivo: {:?}", instant.elapsed());
 
     if hash_table.remove(&40).is_err() {
         println!("Erro ao remover registro 40");
