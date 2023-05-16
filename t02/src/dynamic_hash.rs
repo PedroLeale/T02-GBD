@@ -350,51 +350,6 @@ impl DynamicHashTable {
         }
     }
 
-    /*pub fn insert(&mut self, key: u32, value: [char; 96]) -> std::result::Result<(), &'static str> {
-        let index = self.hash(key) as usize;
-        let item = Item { key, value };
-
-        if let Some(list) = self.table.get_mut(index) {
-            for i in 0..ITEMS_PER_PAGE {
-                if list[i].is_empty() {
-                    list[i] = item;
-                    self.size += 1;
-                    return Ok(());
-                }
-            }
-            self.table.push(
-                [Item {
-                    key: 0xFFFFFFFF,
-                    value: ['a'; 96],
-                }; ITEMS_PER_PAGE],
-            );
-            self.table.last_mut().unwrap()[0] = item;
-            self.size += 1;
-            return Ok(());
-        }
-        Err("Error inserting")
-    }*/
-
-    /*pub fn remove(&mut self, key: u32) -> std::result::Result<(), &'static str> {
-        let index = self.hash(key) as usize;
-        if let Some(list) = self.table.get_mut(index) {
-            for i in 0..ITEMS_PER_PAGE {
-                if !list[i].is_empty() {
-                    let item = list[i];
-                    if item.key == key {
-                        list[i] = Item {
-                            key: 0xFFFFFFFF,
-                            value: ['a'; 96],
-                        };
-                        self.size -= 1;
-                        return Ok(());
-                    }
-                }
-            }
-        }
-        Err("Key not found")
-    }*/
-
     pub fn get_size(&self) -> usize {
         self.size
     }
@@ -403,39 +358,3 @@ impl DynamicHashTable {
         (key % self.capacity as u32) as u64
     }
 }
-
-/*
-    pub fn read_key(&self, key: u32) -> Result<u64, &'static str> {
-        let mut file = match OpenOptions::new().read(true).open(self.file_name.clone()) {
-            Ok(file) => file,
-            Err(_) => return Err("Error opening file"),
-        };
-
-        let mut buffer = [0u8; 12 * ITEMS_PER_PAGE];
-        let offset = self.hash(key) * 12 * ITEMS_PER_PAGE as u64;
-
-        match file.seek(SeekFrom::Start(offset)) {
-            Ok(_) => {
-                match file.read(&mut buffer) {
-                    Ok(_) => {
-                        //Buffer now holds the whole page
-                        //Now we need to split it into 12 byte chunks
-                        for buffer in buffer.chunks_exact(12) {
-                            let (key_buf, value_buf) = buffer.split_at(std::mem::size_of::<u32>());
-                            let registro_key = u32::from_be_bytes(key_buf.try_into().unwrap());
-                            if registro_key == key {
-                                let registro_value =
-                                    u64::from_be_bytes(value_buf.try_into().unwrap());
-                                return Ok(registro_value);
-                            }
-                        }
-                    }
-                    Err(_) => return Err("Error reading file"),
-                }
-            }
-            Err(_) => return Err("Error seeking file"),
-        }
-
-        Err("Error reading key")
-    }
-*/
