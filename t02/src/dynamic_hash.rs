@@ -60,7 +60,7 @@ impl DynamicHashTable {
         };
     }
 
-    pub fn print_all_table(&self) {
+    pub fn print_all_table(&self) { //Intended for debbuging
         let mut file = match OpenOptions::new()
             .read(true)
             .write(true)
@@ -77,8 +77,6 @@ impl DynamicHashTable {
                 Ok(_) => {
                     match file.read_exact(&mut buffer) {
                         Ok(_) => {
-                            // Read the whole page and find an empty slot
-                            // In the first empty slot, we insert the key + value pair
                             for chunk in buffer.chunks_exact(100) {
                                 let (key_buf, value_buf) =
                                     chunk.split_at(std::mem::size_of::<u32>());
@@ -119,8 +117,6 @@ impl DynamicHashTable {
             Ok(_) => {
                 match file.read(&mut buffer) {
                     Ok(_) => {
-                        //Buffer now holds the whole page
-                        //Now we need to split it into 100 byte chunks
                         for buffer in buffer.chunks(100) {
                             let (key_buf, _) = buffer.split_at(std::mem::size_of::<u32>());
                             let registro_key = u32::from_be_bytes(key_buf.try_into().unwrap());
@@ -163,8 +159,6 @@ impl DynamicHashTable {
             Ok(_) => {
                 match file.read_exact(&mut buffer) {
                     Ok(_) => {
-                        //Buffer now holds the whole page
-                        //Now we need to split it into 100 byte chunks (Register size)
                         for chunk in buffer.chunks_exact(100) {
                             let (key_buf, value_buf) = chunk.split_at(std::mem::size_of::<u32>());
                             let registro_key = u32::from_be_bytes(key_buf.try_into().unwrap());
@@ -211,8 +205,6 @@ impl DynamicHashTable {
             Ok(_) => {
                 match file.read(&mut buffer) {
                     Ok(_) => {
-                        //Buffer now holds the whole page
-                        //Now we need to split it into 100 byte chunks
                         for buffer in buffer.chunks(100) {
                             let (key_buf, _) = buffer.split_at(std::mem::size_of::<u32>());
                             let registro_key = u32::from_be_bytes(key_buf.try_into().unwrap());
