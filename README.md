@@ -6,3 +6,5 @@ cargo run
 na pasta t02/
 
 Se desejar altere os valores das constantes no início do arquivo "main.rs"
+
+A função de resize está ineficiente por enquanto, em processo de otimização
