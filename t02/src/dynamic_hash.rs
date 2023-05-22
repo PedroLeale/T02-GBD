@@ -1,8 +1,7 @@
 use std::fs::{OpenOptions};
 use std::io::{Read, Seek, SeekFrom, Write};
 
-
-const ITEMS_PER_PAGE: usize = 1;
+const ITEMS_PER_PAGE: usize = 8;
 const EMPTY_ITEM_KEY: u32 = 0xffffffff;
 const EMPTY_ITEM_VALUE: [char; 96] = ['x'; 96];
 
@@ -18,13 +17,13 @@ pub struct DynamicHashTable {
     capacity: usize,
     file_name: String,
 }
-//Vec<[Item; ITEMS_PER_PAGE]>
+
 #[allow(dead_code)]
 impl DynamicHashTable {
     pub fn new(
         initial_capacity: usize,
         file_name: String,
-    ) -> Result<DynamicHashTable, &'static str> {
+    ) -> Result<DynamicHashTable, &'static str> {  
         let _table = match OpenOptions::new()
             .write(true)
             .create(true)
@@ -72,12 +71,14 @@ impl DynamicHashTable {
 
         let mut buffer = [0u8; 100 * ITEMS_PER_PAGE];
         let mut offset = 0;
+        let mut bucket = 0;
         loop {
             match file.seek(SeekFrom::Start(offset)) {
                 Ok(_) => {
                     match file.read_exact(&mut buffer) {
                         Ok(_) => {
                             for chunk in buffer.chunks_exact(100) {
+                                print!("Bucket: {} [  ", bucket);
                                 let (key_buf, value_buf) =
                                     chunk.split_at(std::mem::size_of::<u32>());
                                 let registro_key = u32::from_be_bytes(key_buf.try_into().unwrap());
@@ -92,6 +93,8 @@ impl DynamicHashTable {
                                     String::from_utf8(registro_value).unwrap()
                                 );
                             }
+                            println!("  ]");
+                            bucket += 1;
                         }
                         Err(_) => return,
                     }
@@ -148,7 +151,7 @@ impl DynamicHashTable {
         }
     }
 
-    pub fn read_key(&self, key: u32) -> Result<Item, &'static str> {
+    pub fn read_key_value(&self, key: u32) -> Result<Item, &'static str> { //Busca um registro pelo sua chave
         let mut file = match OpenOptions::new().read(true).open(self.file_name.clone()) {
             Ok(file) => file,
             Err(_) => return Err("Error opening file"),
@@ -194,7 +197,7 @@ impl DynamicHashTable {
         Err("Error reading key")
     }
 
-    pub fn remove_key(&mut self, key: u32) -> Result<(), &'static str> {
+    pub fn remove_key_value(&mut self, key: u32) -> Result<(), &'static str> {
         let mut file = match OpenOptions::new().read(true).write(true).open(self.file_name.clone()) {
             Ok(file) => file,
             Err(_) => return Err("Error opening file"),
@@ -209,7 +212,6 @@ impl DynamicHashTable {
                             let (key_buf, _) = buffer.split_at(std::mem::size_of::<u32>());
                             let registro_key = u32::from_be_bytes(key_buf.try_into().unwrap());
                             if registro_key == key {
-                                println!("Removing key: {}", key);
                                 let mut insert_buffer = EMPTY_ITEM_KEY.to_be_bytes().to_vec();
                                 insert_buffer
                                     .append(&mut EMPTY_ITEM_VALUE.iter().collect::<String>().into_bytes());
@@ -245,7 +247,7 @@ impl DynamicHashTable {
             }; ITEMS_PER_PAGE * 2];
             self.capacity
         ];
-        //now we need to rehash all the items from the old table to the new one
+
         for i in 0..old_table.len() {
             for j in 0..ITEMS_PER_PAGE {
                 if old_table[i][j].key != EMPTY_ITEM_KEY {
@@ -264,7 +266,7 @@ impl DynamicHashTable {
                 break;
             }
         }
-        //Now we just need to overwrite the old file
+
         let mut file = match OpenOptions::new()
             .write(true)
             .open(self.file_name.clone())
