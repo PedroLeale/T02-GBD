@@ -2,7 +2,7 @@ mod dynamic_hash;
 mod register;
 //Altere estas constantes se quiser rodar com outros valores
 const BUFFER_SIZE: u32 = 10; // Contado em registros ( cada um de 100 bytes )
-const NUMBER_OF_REGISTERS: u32 = 10;
+const NUMBER_OF_REGISTERS: u32 = 100;
 const INITIAL_CAPACITY: usize = 3;
 const FILE_NAME: &str = "arquivo_sem_index_por_hash_dinamico";
 const HASH_TABLE_FILE_NAME: &str = "hash_dinamico_alternativa_1";
